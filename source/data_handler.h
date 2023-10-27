@@ -15,6 +15,8 @@ public:
 
 	// init Functions
 	static void load_data(int n);
+	static void load_data_mnist(std::string path,int n=0);
+	static void load_test_queries();
 
 	// ietter Functions
 	static Datapoint get_data_point_at(int i);
@@ -38,8 +40,7 @@ private:
 
 	// helper Functions 
 	static bool i_in_range(int i,int size=dataset_size);
-	static void load_test_queries();
-
+	static int reverse_int (int i);
 };
 
 #endif

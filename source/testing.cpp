@@ -6,8 +6,8 @@ void Testing::reverse_range_clustering() {
     //Clustering::print_centroids();
 
     //Clustering::run_loyds();
-    //Clustering::run_reverse_range_lsh();
-    Clustering::run_reverse_range_hc();
+    Clustering::run_reverse_range_lsh();
+    //Clustering::run_reverse_range_hc();
 
     //Clustering::print_centroids();  
 
@@ -327,11 +327,11 @@ void Testing::Cluster_testing() {
     // push first 10 points with label 5 for p2
     int count=0;
     for(int i=0;i<DataHandler::get_dataset_size();i++) {
-        if(DataHandler::get_label_at(i)==5) {
+        //if(DataHandler::get_label_at(i)==5) {
             pis2.push_back(i);
             count++;
             if(count==10) break;
-        }
+        //}
     }
 
     Cluster c1(pis1),c2(pis2);
@@ -578,13 +578,14 @@ void Testing::LSH_prototyping_hash_function_h() {
 
 }
 
+// does not work without labels!
 // calculate frequency of appearing numbers
 void Testing::data_exploration() {
     
-    // load dataset
-    int n=60000;
-    DataHandler::load_data(n);
+
     int size=DataHandler::get_dataset_size();
+
+    std::cout<<"Dataset size: "<<size<<std::endl;
 
     // init counters vector to all 0s
     std::vector<int> counters;
@@ -620,9 +621,6 @@ void Testing::data_exploration() {
 // nearest neighbor test
 void Testing::nearest_neighbor() {
     
-    int n=10000;
-
-    DataHandler::load_data(n);
 
     Label q_label=3;
     Datapoint query = DataHandler::get_test_query_at(q_label); 
@@ -641,10 +639,6 @@ void Testing::nearest_neighbor() {
 
 // vec math testing
 void Testing::vec_math() {
-    
-    int n=1000;
-
-    DataHandler::load_data(n);
 
     int i1=3, i2=7;
     Datapoint p1=DataHandler::get_test_query_at(i1), p2=DataHandler::get_test_query_at(i2);
@@ -693,12 +687,9 @@ void Testing::vec_math() {
 void Testing::data_handler_test() {
 	
 
-	int n=1000;
     int index=5;
-    int ascii=1;
+    int ascii=0;
 
-
-    DataHandler::load_data(n);
 
     std::cout<< "\nTesting retrived items with Getter Functions: \n";
     std::cout<< "----------------------------------------------\n";
@@ -740,7 +731,7 @@ void Testing::data_handler_test() {
     std::cout<< "\nSearching all "<<search_label<<"s in dataset:\n";
     std::cout<< "----------------------------------------------\n";
 
-    for(int i=0;i<n;i++) {
+    for(int i=0;i<DataHandler::get_dataset_size();i++) {
     	if(DataHandler::get_label_at(i)==search_label)
     		DataHandler::print_point_and_label_at(i,ascii);
     }

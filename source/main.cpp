@@ -7,13 +7,18 @@
 
 void setup() {
     int n=4000;
-    DataHandler::load_data(n);
+    std::string path="dataset/train-images.idx3-ubyte";
+    DataHandler::load_data_mnist(path,n);
+    DataHandler::load_test_queries();
+    //DataHandler::load_data(n);
     MyRand::setup();
 }
 
 int main() {
 
     setup();
+
+
 
     Testing::reverse_range_clustering();
     //Testing::HC_KNN_RS();
