@@ -4,7 +4,8 @@
 Dataset DataHandler::data_points;
 Labels  DataHandler::data_labels;
 int     DataHandler::dataset_size;
-Dataset DataHandler::test_queries(10);
+Dataset DataHandler::test_queries;
+int     DataHandler::queries_size;
 
 /* Init Functions */
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +71,70 @@ void DataHandler::load_data_mnist(std::string path,int n)
         std::cout<<"Data loaded successfully."<<std::endl;
     } else {
         std::cout<<"Could not find dataset path: "<<path<<std::endl;
+    }
+
+}
+
+// load queries from ubyte mnist dataset
+void DataHandler::load_queries_mnist(std::string path,int n)
+{
+
+    std::ifstream file (path);
+
+    std::cout<<"Loading queries from: "<<path<<std::endl;
+
+    if (file.is_open())
+    {
+        int magic_number=0;
+        int number_of_images=0;
+        int n_rows=0;
+        int n_cols=0;
+
+        file.read((char*)&magic_number,sizeof(magic_number)); 
+        magic_number= reverse_int(magic_number);
+        file.read((char*)&number_of_images,sizeof(number_of_images));
+        number_of_images= reverse_int(number_of_images);
+        file.read((char*)&n_rows,sizeof(n_rows));
+        n_rows= reverse_int(n_rows);
+        file.read((char*)&n_cols,sizeof(n_cols));
+        n_cols= reverse_int(n_cols);
+
+
+        std::cout<<"magic_number = "<<magic_number<<std::endl;
+        std::cout<<"number_of_images = "<<number_of_images<<std::endl;
+        std::cout<<"n_rows = "<<n_rows<<std::endl;
+        std::cout<<"n_cols = "<<n_cols<<std::endl;
+
+        if(n!=0) {
+            number_of_images=n;
+        }
+
+        queries_size=number_of_images;
+
+        for(int i=0;i<number_of_images;++i)
+        {
+
+            Datapoint data_point;
+
+            // reading a data point here
+            for(int r=0;r<n_rows;++r)
+            {
+                for(int c=0;c<n_cols;++c)
+                {
+                    unsigned char temp=0;
+                    file.read((char*)&temp,sizeof(temp));
+                    data_point.push_back(static_cast<int>(temp));
+                }
+            }
+
+            test_queries.push_back(data_point);
+        }
+
+        file.close();
+
+        std::cout<<"Queries loaded successfully."<<std::endl;
+    } else {
+        std::cout<<"Could not find queries path: "<<path<<std::endl;
     }
 
 }
@@ -150,6 +215,11 @@ Datapoint DataHandler::get_test_query_at(int i) {
 // get dataset size
 int DataHandler::get_dataset_size() {
     return dataset_size;
+}
+
+// get queries size
+int DataHandler::get_queries_size() {
+    return queries_size;
 }
 
 

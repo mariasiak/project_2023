@@ -16,6 +16,7 @@ public:
 	// init Functions
 	static void load_data(int n);
 	static void load_data_mnist(std::string path,int n=0);
+	static void load_queries_mnist(std::string path,int n=0);
 	static void load_test_queries();
 
 	// ietter Functions
@@ -23,6 +24,7 @@ public:
 	static Label get_label_at(int i);
 	static Datapoint get_test_query_at(int i);
 	static int get_dataset_size();
+	static int get_queries_size();
 
 	// print functions ( ascii: 0 -> symbols (-+,#), 1 -> values (0 to 255) )
 	static void print_data_point(Datapoint point, int ascii=0);
@@ -37,6 +39,7 @@ private:
 	static Labels  data_labels;
 	static int     dataset_size;
 	static Dataset test_queries;
+	static int 	   queries_size;
 
 	// helper Functions 
 	static bool i_in_range(int i,int size=dataset_size);

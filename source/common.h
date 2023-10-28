@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <sstream>
 #include <dirent.h>
@@ -23,6 +24,8 @@
 #define MIN_VAL			0
 #define MAX_VAL			255
 
+#define MAX_DATA_SIZE	5000
+#define MAX_QUERY_SIZE	10
 
 typedef std::vector<int> 	   Datapoint;
 typedef std::vector<Datapoint> Dataset;

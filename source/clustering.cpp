@@ -39,13 +39,12 @@ void Clustering::run_loyds(){
     }  
 }
 
-void Clustering::run_reverse_range_lsh(){
+void Clustering::run_reverse_range_lsh(int LSH_L, int LSH_k){
     
     // get daset size and setup lsh
     int data_size=DataHandler::get_dataset_size();
-    int L=10;
     int M=data_size/10;
-    LSH::setup(10,M);
+    LSH::setup(LSH_L,M,LSH_k);
 
     // put centroids in a dataset to find nearest pair   
     Dataset centroids; 
@@ -177,11 +176,10 @@ void Clustering::run_reverse_range_lsh(){
     }
 }
 
-void Clustering::run_reverse_range_hc(){
+void Clustering::run_reverse_range_hc(int HC_k,int HC_M,int HC_probes){
     // get daset size and setup HC
     int data_size=DataHandler::get_dataset_size();
-    int d=6;
-    Hypercube::setup(d);
+    Hypercube::setup(HC_k);
 
     // put centroids in a dataset to find nearest pair   
     Dataset centroids; 
@@ -239,7 +237,7 @@ void Clustering::run_reverse_range_hc(){
 
             // run range search for each centroid and mark results in data_point_clusters
             for(int i=0;i<k;i++) {
-                std::vector<int> points_indexes_near_centroid_i = Hypercube::query_range(centroids[i],range,d);    
+                std::vector<int> points_indexes_near_centroid_i = Hypercube::query_range(centroids[i],range,HC_k);    
                 for(int point_index:points_indexes_near_centroid_i) {
                     data_point_clusters[point_index].push_back(i);
                 }
@@ -452,7 +450,7 @@ double Clustering::loyd_step() {
 		- average out si_cluster for all clusters		
 */
 
-double Clustering::get_silhouette_score() {
+std::vector<double> Clustering::get_silhouette_scores() {
 
     std::cout<<"Calculating Silhouette Score:"<<std::endl;
 
@@ -462,8 +460,9 @@ double Clustering::get_silhouette_score() {
         centroids.push_back(clusters[i].centroid);
     }
 
-    // initialise silouhette score and number of clusters
-    double silouhette_score=0.0;
+    // initialise silouhette scores and number of clusters
+    std::vector<double> silouhette_scores;
+    double total_silouhette_score=0.0;
     int num_of_clusters=clusters.size();
 
     // run silouhette calculations for all clusters
@@ -487,8 +486,6 @@ double Clustering::get_silhouette_score() {
                     ai+=VecMath::dist(ith_point,jth_point);
                 }
             }
-
-            /*TODO fix things up here pliz*/
             
             // average it by dividing with cluster_size
             ai/=cluster_size;
@@ -514,10 +511,16 @@ double Clustering::get_silhouette_score() {
         }
 
         std::cout<<"Silhouette Score of cluster "<<k<<" is:"<<cluster_silouhette_score<<std::endl;
-        silouhette_score+=cluster_silouhette_score/num_of_clusters;
+        total_silouhette_score+=cluster_silouhette_score/num_of_clusters;
+        silouhette_scores.push_back(cluster_silouhette_score);
     }
 
-    std::cout<<"Total Silouhette score is: "<<silouhette_score<<std::endl;
+    std::cout<<"Total Silouhette score is: "<<total_silouhette_score<<std::endl;
+    silouhette_scores.push_back(total_silouhette_score);
 
-    return silouhette_score;
+    return silouhette_scores;
+}
+
+std::vector<Cluster> Clustering::get_clusters() {
+    return clusters;
 }

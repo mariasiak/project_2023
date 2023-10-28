@@ -6,7 +6,7 @@ void Testing::reverse_range_clustering() {
     //Clustering::print_centroids();
 
     //Clustering::run_loyds();
-    Clustering::run_reverse_range_lsh();
+    //Clustering::run_reverse_range_lsh();
     //Clustering::run_reverse_range_hc();
 
     //Clustering::print_centroids();  
@@ -93,7 +93,7 @@ void Testing::LSH_KNN_range() {
 
     for(int i=0;i<2;i++) {
 
-        int K=13;
+        int K=1;
 
         std::vector<int> lsh_nn_indexes = LSH::query_KNN(query,K);
 
@@ -192,7 +192,7 @@ void Testing::Clustering_Mac_Queen() {
 
     Clustering::print_centroids();
 
-    double ss = Clustering::get_silhouette_score();
+    //double ss = Clustering::get_silhouette_score();
 }
 
 void Testing::Clustering_testing_k_means_pp() {

@@ -10,6 +10,10 @@ int LSH::w;
 
 void LSH::setup(int LL, int MM, int kk, int ww){
 
+	// clear previous setup of LSH
+	g_functions.clear();
+	hash_tables.clear();
+
 	// set parameters
 	L=LL; M=MM; k=kk; w=ww;
 

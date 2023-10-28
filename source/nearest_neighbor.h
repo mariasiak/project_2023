@@ -16,7 +16,7 @@ public:
 	static int run(Datapoint query,Dataset points);
 	static int run(Datapoint query,Dataset points,int k);
 	static int run(Datapoint query,std::vector<int> point_indexes);
-
+	static std::vector<int> query_KNN(Datapoint query,int K);
 };
 
 #endif

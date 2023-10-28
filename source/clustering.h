@@ -15,9 +15,10 @@ public:
 	static void setup(int k);
 	static void print_centroids();
 	static void run_loyds();
-	static void run_reverse_range_lsh();
-	static void run_reverse_range_hc();
-	static double get_silhouette_score();
+	static void run_reverse_range_lsh(int LSH_L=5, int LSH_k=10);
+	static void run_reverse_range_hc(int HC_k=4,int HC_M=10,int HC_probes=3);
+	static std::vector<double> get_silhouette_scores();
+	static std::vector<Cluster> get_clusters();
 
 private:
 	static int k;

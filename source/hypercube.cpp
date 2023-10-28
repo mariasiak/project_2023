@@ -80,6 +80,11 @@ std::vector<std::vector<int>> Hypercube::hamming_dist_one(std::vector<int> b) {
 
 void Hypercube::setup(int dd, int ww){
 
+	// clear vectors
+	f_functions.clear();
+	h_functions.clear();
+	hypercube_buckets.clear();
+
 	// set d, w
 	d=dd; w=ww;
 
