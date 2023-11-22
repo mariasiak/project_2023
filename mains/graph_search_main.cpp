@@ -4,6 +4,8 @@
 #include "../source/my_rand.h"
 #include "../source/data_handler.h"
 
+#include "../source/gnns.h"
+
 int main(int argc, char* argv[]) {
 
     // setup random seeding
@@ -108,99 +110,17 @@ int main(int argc, char* argv[]) {
         DataHandler::load_data_mnist(input_file,MAX_DATA_SIZE);
         DataHandler::load_queries_mnist(query_file,MAX_QUERY_SIZE);
 
-        // setup LSH
-        int LSH_L=2, LSH_M=50, LSH_k=k;
-
-        std::cout<<"\nRunning LSH.\n";
-        LSH::setup(LSH_L,LSH_M,LSH_k);
-        std::cout<<"Dataset hashed successfully.\n\n";
 
         // create and open outpout file for writing
         std::ofstream out_stream(output_file);
 
-        // graph will be stored here
-        std::vector<std::vector<int>> search_graph;
 
-        // run k-NN LSH queries for the whole dataset to create the GNNS graph
+        // setup LSH variables
+        int LSH_L=10, LSH_M=100, LSH_k=k;
 
-        std::cout<<"Generating search graph:"<<std::endl;
-        std::cout<<"Points parsed:"<<std::endl;
+        // setup GNNS
+        GNNS::setup(LSH_L, LSH_M, LSH_k);
 
-        for(int i=0;i<MAX_DATA_SIZE;i++) {
-            Datapoint datapoint = DataHandler::get_data_point_at(i);
-            /* TODO: use proper k here, +1 because closest neighbor is always the data point itself */
-            int TODO_k=k;
-            /* TODO fix LSH */
-            //std::vector<int> lsh_knn_indexes = LSH::query_KNN(DataHandler::get_data_point_at(0),TODO_k);
-            std::vector<int> lsh_knn_indexes = LSH::query_KNN(DataHandler::get_data_point_at(i),TODO_k);
-
-            // remove index of data point used as query
-            //lsh_knn_indexes.erase(std::remove(lsh_knn_indexes.begin(), lsh_knn_indexes.end(), i), lsh_knn_indexes.end());
-
-            if(i%1000==0 && i>0) {
-                std::cout<<i<<"/"<<MAX_DATA_SIZE<<std::endl;
-            }
-
-            search_graph.push_back(lsh_knn_indexes);
-        }
-
-        for(int i=0;i<MAX_DATA_SIZE;i++) {
-        //if(i%1000==0) {
-        // print datapoint_index : [nn1_index, ..., nnk_index]
-            std::cout<<i<<" : [";
-            std::vector<int> &lsh_knn_indexes=search_graph[i];
-            for(int nni=0;nni<lsh_knn_indexes.size();nni++) {
-                std::cout<<lsh_knn_indexes[nni];
-                if(nni!=lsh_knn_indexes.size()-1) std::cout<<",";
-            }
-            std::cout<<"]"<<std::endl;
-        //}
-        }
-
-        // GNNS Algorithm
-
-        // T : number of greedy steps
-        int T=20;
-
-        Datapoint query = DataHandler::get_test_query_at(0);
-
-        std::vector<int> result_indexes;
-        std::vector<double> result_distances;
-
-        // R random restarts
-        for(int r=1;r<R;r++) {
-            // randomly choose starting point
-            int current_point_index=MyRand::U_int(0,MAX_DATA_SIZE);
-
-            for(int t=1;t<T;t++) {
-                // find E expansions
-                std::vector<int> expansions_indexes;
-                for(int i=0;i<E;i++) {
-                    int expansion_point_index=search_graph[current_point_index][i];
-                    expansions_indexes.push_back(expansion_point_index);
-                    // also add expansion to result indexes
-                    result_indexes.push_back(expansion_point_index);
-                    // and save distance from query
-                    double expansion_point_distance=VecMath::dist(query,DataHandler::get_data_point_at(expansion_point_index));
-                    result_distances.push_back(expansion_point_distance);
-                }
-
-                // set current point index to closest expansion
-                current_point_index = NearestNeighbor::run(query,expansions_indexes);
-            }
-
-        }
-
-        // sort the result
-        std::vector<int> sorted_result_indexes = VecMath::sort_indexes(result_indexes,result_distances);
-
-        // print top N results
-        for(int i=0;i<result_indexes.size();i++) {
-            int nni = result_indexes[i];
-            std::cout<<nni<<" - "<<VecMath::dist(query,DataHandler::get_data_point_at(nni));
-        }
-
-        /*
 
         // run through all queries
         int number_of_queries=DataHandler::get_queries_size();
@@ -209,34 +129,26 @@ int main(int argc, char* argv[]) {
             // run algorithms and print some messages
             Datapoint query = DataHandler::get_test_query_at(i);
 
-            // run range search
-            std::vector<int> lsh_rs_indexes = LSH::query_range(query,radius);
+            // clock and run GNNS KNN
+            auto start_time_gnns = std::chrono::high_resolution_clock::now();
 
-            std::cout<< "\nNeighbors found in range R with LSH: \n";
+            int T=20; // T : number of greedy steps
+            std::vector<int> gnns_nn_indexes = GNNS::query_KNN(query,N,E,R,T);
+
+            auto stop_time_gnns = std::chrono::high_resolution_clock::now();
+            auto duration_gnns = std::chrono::duration_cast<std::chrono::microseconds>(stop_time_gnns - start_time_gnns);
+
+            std::cout<< "\nK Nearest Neighbors found with GNNS: \n";
             std::cout<< "----------------------------------------------\n";
 
-            for(int lsh_rs_index:lsh_rs_indexes) {
-                std::cout<<"point_index = "<<lsh_rs_index<<" ";
-                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(lsh_rs_index))<<std::endl;
-            }  
-
-            // clock and run lsh KNN
-            auto start_time_lsh = std::chrono::high_resolution_clock::now();
-            std::vector<int> lsh_nn_indexes = LSH::query_KNN(query,number_of_nearest);
-            auto stop_time_lsh = std::chrono::high_resolution_clock::now();
-            auto duration_lsh = std::chrono::duration_cast<std::chrono::microseconds>(stop_time_lsh - start_time_lsh);
-
-            std::cout<< "\nK Nearest Neighbors found with LSH: \n";
-            std::cout<< "----------------------------------------------\n";
-
-            for(int lsh_nn_index:lsh_nn_indexes) {
-                std::cout<<"point_index = "<<lsh_nn_index<<" ";
-                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(lsh_nn_index))<<std::endl;
+            for(int gns_nn_index:gnns_nn_indexes) {
+                std::cout<<"point_index = "<<gns_nn_index<<" ";
+                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(gns_nn_index))<<std::endl;
             }    
 
             // clock and run exact KNN
             auto start_time_true = std::chrono::high_resolution_clock::now();        
-            std::vector<int> exact_nn_indexes = NearestNeighbor::query_KNN(query,number_of_nearest);
+            std::vector<int> exact_nn_indexes = NearestNeighbor::query_KNN(query,N);
             auto stop_time_true = std::chrono::high_resolution_clock::now();
             auto duration_true = std::chrono::duration_cast<std::chrono::microseconds>(stop_time_true - start_time_true);
 
@@ -249,23 +161,24 @@ int main(int argc, char* argv[]) {
             }    
 
             // write output file
+            out_stream<<"GNNS Results"<<std::endl;
             out_stream<<"Query: "<<i<<std::endl;
-            for(int j=1;j<=number_of_nearest;j++) {
-                out_stream<<"Nearest neighbor-"<<j<<": "<<lsh_nn_indexes[j-1]<<std::endl;
-                out_stream<<"distanceLSH: "<<VecMath::dist(query,DataHandler::get_data_point_at(lsh_nn_indexes[j-1]))<<std::endl;
+            for(int j=1;j<=N;j++) {
+                out_stream<<"Nearest neighbor-"<<j<<": "<<gnns_nn_indexes[j-1]<<std::endl;
+                out_stream<<"distanceApproxmiate: "<<VecMath::dist(query,DataHandler::get_data_point_at(gnns_nn_indexes[j-1]))<<std::endl;
                 out_stream<<"distanceTrue: "<<VecMath::dist(query,DataHandler::get_data_point_at(exact_nn_indexes[j-1]))<<std::endl;
             }
 
-            out_stream<<"tLSH: "<<duration_lsh.count()<<std::endl;
+            out_stream<<"tGNNS: "<<duration_gnns.count()<<std::endl;
             out_stream<<"tTrue: "<<duration_true.count()<<std::endl;
-            out_stream<<"R-near neighbors: "<<std::endl;
 
-            for(int lsh_rs_index:lsh_rs_indexes) {
-                out_stream<<lsh_rs_index<<std::endl;
-            }               
-
+            /* TODO add these prints at the bottom of output file, remove 2 lines above
+            tAverageApproximate: <double>
+            tAverageTrue: <double> 
+            MAF: <double> [Maximum Approximation Factor]
+            */
         }
-        */
+
 
         out_stream.close();
 
