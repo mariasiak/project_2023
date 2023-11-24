@@ -5,6 +5,7 @@
 #include "../source/data_handler.h"
 
 #include "../source/gnns.h"
+#include "../source/mrng.h"
 
 int main(int argc, char* argv[]) {
 
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]) {
         else if (arg == "-N" && i + 1 < argc) {
             N = std::stoi(argv[i + 1]);
             i++;
-        } // -I <int_only_for_search_on_graph> : number for candidate tank
+        } // -I <int_only_for_search_on_graph> : size of candidate tank
         else if (arg == "-I" && i + 1 < argc) {
             I = std::stoi(argv[i + 1]);
             i++;
@@ -118,9 +119,13 @@ int main(int argc, char* argv[]) {
         // setup LSH variables
         int LSH_L=10, LSH_M=100, LSH_k=k;
 
-        // setup GNNS
-        GNNS::setup(LSH_L, LSH_M, LSH_k);
-
+        // setup GNNS or MRNG
+        if (m==1) {
+            GNNS::setup(LSH_L, LSH_M, LSH_k);
+        }
+        else if (m==2) {
+            MRNG::setup(LSH_L, LSH_M, LSH_k, I);
+        }
 
         // run through all queries
         int number_of_queries=DataHandler::get_queries_size();
@@ -129,26 +134,34 @@ int main(int argc, char* argv[]) {
             // run algorithms and print some messages
             Datapoint query = DataHandler::get_test_query_at(i);
 
-            // clock and run GNNS KNN
-            auto start_time_gnns = std::chrono::high_resolution_clock::now();
+            // clock and run GNNS or MRNG KNN
+            auto start_time_graph_search = std::chrono::high_resolution_clock::now();
 
-            int T=20; // T : number of greedy steps
-            std::vector<int> gnns_nn_indexes = GNNS::query_KNN(query,N,E,R,T);
+            std::vector<int> graph_search_nn_indexes;
+            if(m==1) {
+                int T=20; // T : number of greedy steps
+                graph_search_nn_indexes = GNNS::query_KNN(query,N,E,R,T);
+            }
+            else if (m==2) {
+                graph_search_nn_indexes = MRNG::query_KNN(query,N);   
+            }
 
-            auto stop_time_gnns = std::chrono::high_resolution_clock::now();
-            auto duration_gnns = std::chrono::duration_cast<std::chrono::microseconds>(stop_time_gnns - start_time_gnns);
+            auto stop_time_graph_search = std::chrono::high_resolution_clock::now();
+            auto duration_graph_search = std::chrono::duration_cast<std::chrono::microseconds>(stop_time_graph_search - start_time_graph_search);
 
-            std::cout<< "\nK Nearest Neighbors found with GNNS: \n";
+            std::cout<< "\nK Nearest Neighbors found with Graph Search: \n";
             std::cout<< "----------------------------------------------\n";
 
-            for(int gns_nn_index:gnns_nn_indexes) {
-                std::cout<<"point_index = "<<gns_nn_index<<" ";
-                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(gns_nn_index))<<std::endl;
+            for(int graph_search_nn_index:graph_search_nn_indexes) {
+                std::cout<<"point_index = "<<graph_search_nn_index<<" ";
+                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(graph_search_nn_index))<<std::endl;
             }    
 
             // clock and run exact KNN
             auto start_time_true = std::chrono::high_resolution_clock::now();        
+
             std::vector<int> exact_nn_indexes = NearestNeighbor::query_KNN(query,N);
+
             auto stop_time_true = std::chrono::high_resolution_clock::now();
             auto duration_true = std::chrono::duration_cast<std::chrono::microseconds>(stop_time_true - start_time_true);
 
@@ -161,15 +174,20 @@ int main(int argc, char* argv[]) {
             }    
 
             // write output file
-            out_stream<<"GNNS Results"<<std::endl;
+            if (m==1) {
+                out_stream<<"GNNS Results"<<std::endl;
+            } 
+            else if (m==2) {
+                out_stream<<"MRNG Results"<<std::endl;
+            }
             out_stream<<"Query: "<<i<<std::endl;
             for(int j=1;j<=N;j++) {
-                out_stream<<"Nearest neighbor-"<<j<<": "<<gnns_nn_indexes[j-1]<<std::endl;
-                out_stream<<"distanceApproxmiate: "<<VecMath::dist(query,DataHandler::get_data_point_at(gnns_nn_indexes[j-1]))<<std::endl;
+                out_stream<<"Nearest neighbor-"<<j<<": "<<graph_search_nn_indexes[j-1]<<std::endl;
+                out_stream<<"distanceApproxmiate: "<<VecMath::dist(query,DataHandler::get_data_point_at(graph_search_nn_indexes[j-1]))<<std::endl;
                 out_stream<<"distanceTrue: "<<VecMath::dist(query,DataHandler::get_data_point_at(exact_nn_indexes[j-1]))<<std::endl;
             }
 
-            out_stream<<"tGNNS: "<<duration_gnns.count()<<std::endl;
+            out_stream<<"tGNNS: "<<duration_graph_search.count()<<std::endl;
             out_stream<<"tTrue: "<<duration_true.count()<<std::endl;
 
             /* TODO add these prints at the bottom of output file, remove 2 lines above
