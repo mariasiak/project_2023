@@ -71,7 +71,9 @@ std::vector<int> GNNS::query_KNN(Datapoint query,int N,int E, int R, int T){
             }
 
             // set current point index to closest expansion
-            current_point_index = NearestNeighbor::run(query,expansions_indexes);
+            int nn_index = NearestNeighbor::run(query,expansions_indexes);
+            current_point_index = expansions_indexes[nn_index];
+
 
             // check if we have already visited this point in the graph
             bool will_make_circle=false;
@@ -97,8 +99,26 @@ std::vector<int> GNNS::query_KNN(Datapoint query,int N,int E, int R, int T){
     // sort the result
     std::vector<int> sorted_result_indexes = VecMath::sort_indexes(result_indexes,result_distances);
 
+    // keep only unique indexes
+    std::vector<int> unique_sorted_result_indexes;
+
+    for(int sri:sorted_result_indexes) {
+        bool found=false;
+
+        for(int usri:unique_sorted_result_indexes) {
+            if (sri==usri) {
+                found=true;
+            }
+        }
+
+        if (found==false) {
+            unique_sorted_result_indexes.push_back(sri);
+        } 
+    }
+
+
     // return only the first N elements
-    int offset=std::min(N,int(sorted_result_indexes.size()));
-    auto vec_start=sorted_result_indexes.begin();
-	return std::vector<int>(vec_start, vec_start + offset);
+    int offset=std::min(N,int(unique_sorted_result_indexes.size()));
+    auto vec_start=unique_sorted_result_indexes.begin();
+    return std::vector<int>(vec_start, vec_start + offset);
 }
