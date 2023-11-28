@@ -85,6 +85,12 @@ int main(int argc, char* argv[]) {
 
         std::ofstream out_stream(output_file);
 
+
+        double tAverageApproximate=0.0;
+        double tAverageTrue=0.0;
+        double MAF=0.0;
+        double AAF=0.0;
+
         // run through all queries
         int number_of_queries=DataHandler::get_queries_size();
         for(int i=0;i<number_of_queries;i++) {
@@ -147,7 +153,23 @@ int main(int argc, char* argv[]) {
                 out_stream<<hc_rs_index<<std::endl;
             }               
 
+            tAverageApproximate+=duration_hc.count()/number_of_queries;
+            tAverageTrue+=duration_true.count()/number_of_queries;
+
+            double AF = VecMath::dist(query,DataHandler::get_data_point_at(hc_nn_indexes[0]))/VecMath::dist(query,DataHandler::get_data_point_at(exact_nn_indexes[0]));
+
+            if(AF>MAF) {
+                MAF=AF;
+            }
+
+            AAF+=AF/number_of_queries;
+
         }
+
+        out_stream<<"tAverageApproximate: "<< tAverageApproximate <<std::endl;
+        out_stream<<"tAverageTrue: "<< tAverageTrue <<std::endl;
+        out_stream<<"MAF: "<< MAF <<std::endl;
+        out_stream<<"AAF: "<< AAF <<std::endl;
 
         out_stream.close();
 

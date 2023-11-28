@@ -115,6 +115,14 @@ int main(int argc, char* argv[]) {
         // create and open outpout file for writing
         std::ofstream out_stream(output_file);
 
+        // write output file
+        if (m==1) {
+            out_stream<<"GNNS Results"<<std::endl;
+        } 
+        else if (m==2) {
+            out_stream<<"MRNG Results"<<std::endl;
+        }
+
 
         // setup LSH variables
         int LSH_L=10, LSH_M=100, LSH_k=k;
@@ -126,6 +134,11 @@ int main(int argc, char* argv[]) {
         else if (m==2) {
             MRNG::setup(LSH_L, LSH_M, LSH_k, I);
         }
+
+        double tAverageApproximate=0.0;
+        double tAverageTrue=0.0;
+        double MAF=0.0;
+        double AAF=0.0;
 
         // run through all queries
         int number_of_queries=DataHandler::get_queries_size();
@@ -173,13 +186,6 @@ int main(int argc, char* argv[]) {
                 std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(exact_nn_index))<<std::endl;
             }    
 
-            // write output file
-            if (m==1) {
-                out_stream<<"GNNS Results"<<std::endl;
-            } 
-            else if (m==2) {
-                out_stream<<"MRNG Results"<<std::endl;
-            }
             out_stream<<"Query: "<<i<<std::endl;
             for(int j=1;j<=N;j++) {
                 out_stream<<"Nearest neighbor-"<<j<<": "<<graph_search_nn_indexes[j-1]<<std::endl;
@@ -187,15 +193,22 @@ int main(int argc, char* argv[]) {
                 out_stream<<"distanceTrue: "<<VecMath::dist(query,DataHandler::get_data_point_at(exact_nn_indexes[j-1]))<<std::endl;
             }
 
-            out_stream<<"tGNNS: "<<duration_graph_search.count()<<std::endl;
-            out_stream<<"tTrue: "<<duration_true.count()<<std::endl;
+            tAverageApproximate+=duration_graph_search.count()/number_of_queries;
+            tAverageTrue+=duration_true.count()/number_of_queries;
 
-            /* TODO add these prints at the bottom of output file, remove 2 lines above
-            tAverageApproximate: <double>
-            tAverageTrue: <double> 
-            MAF: <double> [Maximum Approximation Factor]
-            */
+            double AF = VecMath::dist(query,DataHandler::get_data_point_at(graph_search_nn_indexes[0]))/VecMath::dist(query,DataHandler::get_data_point_at(exact_nn_indexes[0]));
+
+            if(AF>MAF) {
+                MAF=AF;
+            }
+
+            AAF+=AF/number_of_queries;
         }
+
+        out_stream<<"tAverageApproximate: "<< tAverageApproximate <<std::endl;
+        out_stream<<"tAverageTrue: "<< tAverageTrue <<std::endl;
+        out_stream<<"MAF: "<< MAF <<std::endl;
+        out_stream<<"AAF: "<< AAF <<std::endl;
 
 
         out_stream.close();
