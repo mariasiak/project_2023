@@ -78,7 +78,7 @@ struct HashFunction_g {
 
         // add h functions to h_hash_functions
         for (int i=0;i<k;i++) {
-            h_hash_functions.push_back(w);
+            h_hash_functions.push_back(HashFunction_h(w));
         }
 
         // generate ris in U_int[1,N]

@@ -57,7 +57,7 @@ int NearestNeighbor::run(Datapoint query) {
 	return nn_index;
 }
 
-int NearestNeighbor::run(Datapoint query,Dataset points) {
+int NearestNeighbor::run(Datapoint query,Dataset& points) {
 	int size=points.size();
 	int nn_index=0;
 	double distance=VecMath::dist(query,points[0]);
@@ -74,7 +74,7 @@ int NearestNeighbor::run(Datapoint query,Dataset points) {
 }
 
 // int k defines an index to skip
-int NearestNeighbor::run(Datapoint query,Dataset points,int k) {
+int NearestNeighbor::run(Datapoint query,Dataset& points,int k) {
 	int size=points.size();
 	int nn_index=0;
 	double distance=VecMath::dist(query,points[0]);
@@ -96,8 +96,8 @@ int NearestNeighbor::run(Datapoint query,Dataset points,int k) {
 	return nn_index;	
 }
 
-// find nearest neighbor in databes given indexes instead of points
-int NearestNeighbor::run(Datapoint query,std::vector<int> point_indexes) {
+// find nearest neighbor in database given indexes instead of points
+int NearestNeighbor::run(Datapoint query,std::vector<int>& point_indexes) {
 	int size=point_indexes.size();
 	int nn_index=0;
 	double distance=VecMath::dist(query,DataHandler::get_data_point_at(point_indexes[0]));

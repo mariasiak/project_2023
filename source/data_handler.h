@@ -19,7 +19,7 @@ public:
 	static void load_queries_mnist(std::string path,int n=0);
 	static void load_test_queries();
 
-	// ietter Functions
+	// getter Functions
 	static Datapoint get_data_point_at(int i);
 	static Label get_label_at(int i);
 	static Datapoint get_test_query_at(int i);

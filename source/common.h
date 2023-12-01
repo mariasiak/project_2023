@@ -24,8 +24,8 @@
 #define MIN_VAL			0
 #define MAX_VAL			255
 
-#define MAX_DATA_SIZE	5000
-#define MAX_QUERY_SIZE	10
+#define MAX_DATA_SIZE	60000
+#define MAX_QUERY_SIZE	100
 
 typedef std::vector<int> 	   Datapoint;
 typedef std::vector<Datapoint> Dataset;

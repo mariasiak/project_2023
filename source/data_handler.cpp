@@ -40,7 +40,7 @@ void DataHandler::load_data_mnist(std::string path,int n)
         std::cout<<"n_rows = "<<n_rows<<std::endl;
         std::cout<<"n_cols = "<<n_cols<<std::endl;
 
-        if(n!=0) {
+        if(n!=0 && n<number_of_images) {
             number_of_images=n;
         }
 
@@ -105,7 +105,7 @@ void DataHandler::load_queries_mnist(std::string path,int n)
         std::cout<<"n_rows = "<<n_rows<<std::endl;
         std::cout<<"n_cols = "<<n_cols<<std::endl;
 
-        if(n!=0) {
+        if(n!=0 && n<number_of_images) {
             number_of_images=n;
         }
 
