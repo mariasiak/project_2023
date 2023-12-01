@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
         out_stream<<"tAverageApproximate: "<< tAverageApproximate <<std::endl;
         out_stream<<"tAverageTrue: "<< tAverageTrue <<std::endl;
         out_stream<<"MAF: "<< MAF <<std::endl;
-        out_stream<<"AAF: "<< AAF <<std::endl;
+        //out_stream<<"AAF: "<< AAF <<std::endl;
 
 
         out_stream.close();

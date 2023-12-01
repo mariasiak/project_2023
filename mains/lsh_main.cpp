@@ -95,16 +95,19 @@ int main(int argc, char* argv[]) {
             // run algorithms and print some messages
             Datapoint query = DataHandler::get_test_query_at(i);
 
-            // run range search
-            std::vector<int> lsh_rs_indexes = LSH::query_range(query,radius);
+            std::vector<int> lsh_rs_indexes;
+            if(radius>0) {
+                // run range search
+                lsh_rs_indexes = LSH::query_range(query,radius);
 
-            std::cout<< "\nNeighbors found in range R with LSH: \n";
-            std::cout<< "----------------------------------------------\n";
+                std::cout<< "\nNeighbors found in range R with LSH: \n";
+                std::cout<< "----------------------------------------------\n";
 
-            for(int lsh_rs_index:lsh_rs_indexes) {
-                std::cout<<"point_index = "<<lsh_rs_index<<" ";
-                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(lsh_rs_index))<<std::endl;
-            }  
+                for(int lsh_rs_index:lsh_rs_indexes) {
+                    std::cout<<"point_index = "<<lsh_rs_index<<" ";
+                    std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(lsh_rs_index))<<std::endl;
+                }  
+            }
 
             // clock and run lsh KNN
             auto start_time_lsh = std::chrono::high_resolution_clock::now();

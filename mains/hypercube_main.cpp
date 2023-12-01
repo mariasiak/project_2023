@@ -98,16 +98,19 @@ int main(int argc, char* argv[]) {
             // run algorithms and print some messages
             Datapoint query = DataHandler::get_test_query_at(i);
 
-            // run range search with Hypercube
-            std::vector<int> hc_rs_indexes = Hypercube::query_range(query,radius,probes);
+            std::vector<int> hc_rs_indexes;
+            if(radius>0) {
+                // run range search with Hypercube
+                hc_rs_indexes = Hypercube::query_range(query,radius,probes);
 
-            std::cout<< "\nNeighbors found in range R with Hypercube: \n";
-            std::cout<< "----------------------------------------------\n";
+                std::cout<< "\nNeighbors found in range R with Hypercube: \n";
+                std::cout<< "----------------------------------------------\n";
 
-            for(int hc_rs_index:hc_rs_indexes) {
-                std::cout<<"point_index = "<<hc_rs_index<<" ";
-                std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(hc_rs_index))<<std::endl;
-            }  
+                for(int hc_rs_index:hc_rs_indexes) {
+                    std::cout<<"point_index = "<<hc_rs_index<<" ";
+                    std::cout<<"Distance from query: "<<VecMath::dist(query,DataHandler::get_data_point_at(hc_rs_index))<<std::endl;
+                }  
+            }
 
             // clock and run Hypercube KNN
             auto start_time_hc = std::chrono::high_resolution_clock::now();
